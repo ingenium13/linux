@@ -55,6 +55,7 @@
 #include <mach/system.h>
 
 #include <linux/delay.h>
+#include <linux/pps-gpio.h>
 
 #include "bcm2708.h"
 #include "armctrl.h"
@@ -64,6 +65,19 @@
 #include <linux/broadcom/vc_cma.h>
 #endif
 
+/* PPS-GPIO platform data */
+static struct pps_gpio_platform_data pps_gpio_info = {
+	.assert_falling_edge = false,
+	.capture_clear= false,
+	.gpio_pin=24,
+	.gpio_label="PPS",
+};
+
+static struct platform_device pps_gpio_device = {
+	.name = "pps-gpio",
+	.id = -1,
+	.dev = { .platform_data = &pps_gpio_info },
+};
 
 /* Effectively we have an IOMMU (ARM<->VideoCore map) that is set up to
  * give us IO access only to 64Mbytes of physical memory (26 bits).  We could
@@ -793,6 +807,7 @@ void __init bcm2708_init(void)
 	bcm_register_device(&bcm2708_vcio_device);
 #ifdef CONFIG_BCM2708_GPIO
 	bcm_register_device(&bcm2708_gpio_device);
+	bcm_register_device(&pps_gpio_device);
 #endif
 #if defined(CONFIG_W1_MASTER_GPIO) || defined(CONFIG_W1_MASTER_GPIO_MODULE)
 	w1_gpio_pdata.pin = w1_gpio_pin;
